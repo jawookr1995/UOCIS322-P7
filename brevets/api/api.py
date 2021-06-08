@@ -39,7 +39,7 @@ class LoginForm(Form):
     password = StringField('Password', validators=[validators.DataRequired(message=u'Enter password')])
     remember = BooleanField('Remember Me')
 
-class UserInfo(SuerMixin):
+class UserInfo(UserMixin):
     def __init__(self, user_id):
         self.id = str(user_id)
 
