@@ -11,9 +11,9 @@ def verify_password(password, hashVal):
 
 if __name__ == "__main__":
     testPass = "UOCIS322"
-    hVal = hash_password(testPass)
+    hashVal = hash_password(testPass)
     print (hVal)
-    if verify_password(testPass, hVal):
+    if verify_password(testPass, hashVal):
         print ("Success")
     else:
         print ("Failure")
