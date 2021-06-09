@@ -27,11 +27,11 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = ('/api/login')
 
-app.config['SECRET_KEY'] = "yeah, not actually a secret"
+app.config['SECRET_KEY'] = "Not Secret key actually"
 
 
 #from docker-compose.yml
-client = MongoClient("db", 27017)
+client = MongoClient(os.environ['DB_PORT_27017_TCP_ADDR'], 27017)
 db = client.tododb
 users = db.userdb
 #csrf_token = 'asdhfklh'
@@ -40,11 +40,11 @@ users = db.userdb
 #our register and login forms that coincide with register and login html files
 class RegisterForm(Form):
     username = StringField('Username', validators=[validators.DataRequired(message=u'Enter username')])
-    password = StringField('Password', validators=[validators.DataRequired(message=u'Enter password')])
+    password = PasswordField('Password', validators=[validators.DataRequired(message=u'Enter password')])
     
 class LoginForm(Form):
     username = StringField('Username', validators=[validators.DataRequired(message=u'Enter username')])
-    password = StringField('Password', validators=[validators.DataRequired(message=u'Enter password')])
+    password = PasswordField('Password', validators=[validators.DataRequired(message=u'Enter password')])
     remember = BooleanField('Remember Me')
 
 #user class to get our IDs    
@@ -61,14 +61,14 @@ def register():
     username = form.username.data
     password = form.password.data
     
-    makeId = "" 
+    Id = "" 
 
     #take action once user has submitted
     if form.validate():
         #get username in database
         item = db.tododb.find_one({"username":username})
         #make our random id for username
-        makeId = randint(1,50000)
+        Id = randint(1,50000)
 
         #if user/pass not found, return 400 error
         if (username == None) or (password == None):
@@ -77,14 +77,14 @@ def register():
             return 'try a different username', 400
 
         #hash the password
-        hVal = hash_password(password)
+        hashVal = hash_password(password)
 
         #add our new user with its info into our users database
-        new = {"_id": makeId, 'username': username, 'password': hVal}
+        new = {"_id": Id, 'username': username, 'password': hashVal}
         users.insert_one(new)
 
         #push this result out from above in json format
-        result = {'location': makeId, 'username': username, 'password': hVal}
+        result = {'location': Id, 'username': username, 'password': hashVal}
         
         return flask.jsonify(result=result), 201
 
@@ -169,7 +169,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return "You've been Logged out"
+    return "You are now logged out"
 
 #index page with login, logout, and register
 @app.route("/")
@@ -262,7 +262,7 @@ class allCSV(Resource):
         #split each value up by a comma and loop through the list and add
         csv = ""
         for item in items:
-            csv += item['open'] + ', ' + item['close'] + ', '
+            csv += item['open_list'] + ', ' + item['close_list'] + ', '
 
         return csv
 
@@ -279,7 +279,7 @@ class openL(Resource):
         _items = db.tododb.find().sort("openTime", pymongo.ASCENDING).limit(int(top))
 
         return {
-            'openTime': [item['open'] for item in _items]
+            'openTime': [item['open_list'] for item in _items]
         }
 
 class openJson(Resource):
@@ -295,7 +295,7 @@ class openJson(Resource):
         _items = db.tododb.find().sort("openTime", pymongo.ASCENDING).limit(int(top))
         
         return {
-            'openTime': [item['open'] for item in _items]
+            'openTime': [item['open_list'] for item in _items]
         }
 
 class openCSV(Resource):
@@ -313,7 +313,7 @@ class openCSV(Resource):
 
         csv = ""
         for item in items:
-            csv += item['open'] + ', '
+            csv += item['open_list'] + ', '
         return csv
 
 class closeL(Resource):
@@ -330,7 +330,7 @@ class closeL(Resource):
         _items = db.tododb.find().sort("closeTime", pymongo.ASCENDING).limit(int(top))
 
         return {
-            'closeTime': [item['close'] for item in _items]
+            'closeTime': [item['close_list'] for item in _items]
         }
 
 class closeJson(Resource):
@@ -346,7 +346,7 @@ class closeJson(Resource):
         _items = db.tododb.find().sort("closeTime", pymongo.ASCENDING).limit(int(top))
 
         return {
-            'closeTime': [item['close'] for item in _items]
+            'closeTime': [item['close_list'] for item in _items]
         }
 
 class closeCSV(Resource):
@@ -365,7 +365,7 @@ class closeCSV(Resource):
 
         csv = ""
         for item in items:
-            csv += item['close'] + ', '
+            csv += item['close_list'] + ', '
         return csv
 
 # Create routes
