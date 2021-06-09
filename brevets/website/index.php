@@ -1,707 +1,155 @@
 <html>
     <head>
-        <title>Brevet Calculation Result</title>
-        <link rel="stylesheet"
-            href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-        <script
-            src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js">
-        </script>
+        <title>All Times and APIs</title>
     </head>
 
     <body>
-    <h3 class="text-center">/listAll</h3>
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col col-lg-2">
-                </div>
-                <div class="col-md-auto">
-                <?php
-                    $json = file_get_contents('http://restapi/listAll');
-                    $obj = json_decode($json);
-                    $ddt = $obj->ddt;
-                    $header = $obj->header;
-                    $items = $obj->items;
-                    echo "<table class=\"table table-bordered\">";
-                    foreach ($ddt as $l) {
-                        echo "<tr>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</table>";
-                    echo "<br>";
-                    echo "<table class=\"table table-bordered\">";
-                    echo "<thead>";
-                    foreach ($header as $l) {
-                        echo "<tr>";
-                        echo "<th>#Brevet</th>";
-                        foreach($l as $i) {
-                            echo "<th>$i</th>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</thead>";
-                    $index = 1;
-                    echo "<tbody>";
-                    foreach ($items as $l) {
-                        echo "<tr>";
-                        echo "<th>$index</th>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                        $index++;
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    $json = 0;
-                ?>
-                </div>
-                <div class="col col-lg-2">
-                </div>
-            </div>
-        </div>
+        <h1>listAll</h1>
+        <ul>
+            <?php
+            //our url
+            $json = file_get_contents('http://laptop-service/listAll');
+            $obj = json_decode($json);
+            
+            //open and close times from api.py
+              $openTime = $obj->openTime;
+              $closeTime = $obj->closeTime;
+              
+            //loop through open and close with foreach times and print out via echo
+            echo "  Open:\n";
+            foreach ($openTime as $l) {
+                echo "<li>$l</li>";
+            }
+            
+            echo "  Close:\n";
+            foreach ($closeTime as $l) {
+                echo "<li>$l</li>";
+            }
+        //now we make all of our cases below
+            ?>
+            
+        <h1>listOpenOnly</h1>
+            <?php
+            $json = file_get_contents('http://laptop-service/listOpenOnly');
+            $obj = json_decode($json);
+              $openTime = $obj->openTime;
+              
+            echo "  Open:\n";
+            foreach ($openTime as $l) {
+                echo "<li>$l</li>";
+            }
+            ?>
+        
+        <h1>listCloseOnly</h1>
+            <?php
+            $json = file_get_contents('http://laptop-service/listCloseOnly');
+            $obj = json_decode($json);
+              $closeTime = $obj->closeTime;
+              
+            echo "  Close:\n";
+            foreach ($closeTime as $l) {
+                echo "<li>$l</li>";
+            }
+            ?>
+          
+         <h1>listAllJson</h1>
+            <?php
+            $json = file_get_contents('http://laptop-service/listAll/json');
+            $obj = json_decode($json);
+            
+              $openTime = $obj->openTime;
+              $closeTime = $obj->closeTime;
 
-        <h3 class="text-center">/listOpenOnly</h3>
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col col-lg-2">
-                </div>
-                <div class="col-md-auto">
-                <?php
-                    $json = file_get_contents('http://restapi/listOpenOnly');
-                    $obj = json_decode($json);
-                    $ddt = $obj->ddt;
-                    $header = $obj->header;
-                    $items = $obj->items;
-                    echo "<table class=\"table table-bordered\">";
-                    foreach ($ddt as $l) {
-                        echo "<tr>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</table>";
-                    echo "<br>";
-                    echo "<table class=\"table table-bordered\">";
-                    echo "<thead>";
-                    foreach ($header as $l) {
-                        echo "<tr>";
-                        echo "<th>#Brevet</th>";
-                        foreach($l as $i) {
-                            echo "<th>$i</th>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</thead>";
-                    $index = 1;
-                    echo "<tbody>";
-                    foreach ($items as $l) {
-                        echo "<tr>";
-                        echo "<th>$index</th>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                        $index++;
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    $json = 0;
-                ?>
-                </div>
-                <div class="col col-lg-2">
-                </div>
-            </div>
-        </div>
+            echo "  Open:\n";
+            foreach ($openTime as $l) {
+                echo "<li>$l</li>";
+            }
+            
+            echo "  Close:\n";
+            foreach ($closeTime as $l) {
+                echo "<li>$l</li>";
+            }
+            
+            ?>
 
-        <h3 class="text-center">/listCloseOnly</h3>
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col col-lg-2">
-                </div>
-                <div class="col-md-auto">
-                <?php
-                    $json = file_get_contents('http://restapi/listCloseOnly');
-                    $obj = json_decode($json);
-                    $ddt = $obj->ddt;
-                    $header = $obj->header;
-                    $items = $obj->items;
-                    echo "<table class=\"table table-bordered\">";
-                    foreach ($ddt as $l) {
-                        echo "<tr>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</table>";
-                    echo "<br>";
-                    echo "<table class=\"table table-bordered\">";
-                    echo "<thead>";
-                    foreach ($header as $l) {
-                        echo "<tr>";
-                        echo "<th>#Brevet</th>";
-                        foreach($l as $i) {
-                            echo "<th>$i</th>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</thead>";
-                    $index = 1;
-                    echo "<tbody>";
-                    foreach ($items as $l) {
-                        echo "<tr>";
-                        echo "<th>$index</th>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                        $index++;
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    $json = 0;
-                ?>
-                </div>
-                <div class="col col-lg-2">
-                </div>
-            </div>
-        </div>
-
-        <h3 class="text-center">/listAll/json</h3>
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col col-lg-2">
-                </div>
-                <div class="col-md-auto">
-                <?php
-                    $json = file_get_contents('http://restapi/listAll/json');
-                    $obj = json_decode($json);
-                    $ddt = $obj->ddt;
-                    $header = $obj->header;
-                    $items = $obj->items;
-                    echo "<table class=\"table table-bordered\">";
-                    foreach ($ddt as $l) {
-                        echo "<tr>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</table>";
-                    echo "<br>";
-                    echo "<table class=\"table table-bordered\">";
-                    echo "<thead>";
-                    foreach ($header as $l) {
-                        echo "<tr>";
-                        echo "<th>#Brevet</th>";
-                        foreach($l as $i) {
-                            echo "<th>$i</th>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</thead>";
-                    $index = 1;
-                    echo "<tbody>";
-                    foreach ($items as $l) {
-                        echo "<tr>";
-                        echo "<th>$index</th>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                        $index++;
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    $json = 0;
-                ?>
-                </div>
-                <div class="col col-lg-2">
-                </div>
-            </div>
-        </div>
-
-        <h3 class="text-center">/listOpenOnly/json</h3>
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col col-lg-2">
-                </div>
-                <div class="col-md-auto">
-                <?php
-                    $json = file_get_contents('http://restapi/listOpenOnly/json');
-                    $obj = json_decode($json);
-                    $ddt = $obj->ddt;
-                    $header = $obj->header;
-                    $items = $obj->items;
-                    echo "<table class=\"table table-bordered\">";
-                    foreach ($ddt as $l) {
-                        echo "<tr>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</table>";
-                    echo "<br>";
-                    echo "<table class=\"table table-bordered\">";
-                    echo "<thead>";
-                    foreach ($header as $l) {
-                        echo "<tr>";
-                        echo "<th>#Brevet</th>";
-                        foreach($l as $i) {
-                            echo "<th>$i</th>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</thead>";
-                    $index = 1;
-                    echo "<tbody>";
-                    foreach ($items as $l) {
-                        echo "<tr>";
-                        echo "<th>$index</th>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                        $index++;
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    $json = 0;
-                ?>
-                </div>
-                <div class="col col-lg-2">
-                </div>
-            </div>
-        </div>
-
-        <h3 class="text-center">/listCloseOnly/json</h3>
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col col-lg-2">
-                </div>
-                <div class="col-md-auto">
-                <?php
-                    $json = file_get_contents('http://restapi/listCloseOnly/json');
-                    $obj = json_decode($json);
-                    $ddt = $obj->ddt;
-                    $header = $obj->header;
-                    $items = $obj->items;
-                    echo "<table class=\"table table-bordered\">";
-                    foreach ($ddt as $l) {
-                        echo "<tr>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</table>";
-                    echo "<br>";
-                    echo "<table class=\"table table-bordered\">";
-                    echo "<thead>";
-                    foreach ($header as $l) {
-                        echo "<tr>";
-                        echo "<th>#Brevet</th>";
-                        foreach($l as $i) {
-                            echo "<th>$i</th>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</thead>";
-                    $index = 1;
-                    echo "<tbody>";
-                    foreach ($items as $l) {
-                        echo "<tr>";
-                        echo "<th>$index</th>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                        $index++;
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    $json = 0;
-                ?>
-                </div>
-                <div class="col col-lg-2">
-                </div>
-            </div>
-        </div>
-        <h3 class="text-center">/listAll/csv</h3>
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col col-lg-2">
-                </div>
-                <div class="col-md-auto">
-                <?php
-                    $json = file_get_contents('http://restapi/listAll/csv');
-                    $json = str_replace(array('\"', '"'), '', $json);
-                    $json = str_replace(array('\n'), '\\', $json);
-                    $row = str_getcsv($json, '\n');
-                    $rlen = count($row) - 1;
-                    echo "<table class=\"table table-bordered\">";
-                    echo "<tbody>";
-                    
-                    for($i = 0; $i < $rlen; $i++) {
-                        $col = str_getcsv($row[$i], ',');
-                        $clen = count($col);
-                        echo "<tr>";
-                        for($j = 0; $j < $clen; $j++) {
-                            if ($col[$j] != "" || $j == 2) {
-                                echo "<td>$col[$j]</td>";
-                            }
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    $json = 0;
-                ?>
-                </div>
-                <div class="col col-lg-2">
-                </div>
-            </div>
-        </div>
-        <h3 class="text-center">/listOpenOnly/csv</h3>
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col col-lg-2">
-                </div>
-                <div class="col-md-auto">
-                <?php
-                    $json = file_get_contents('http://restapi/listOpenOnly/csv');
-                    $json = str_replace(array('\"', '"'), '', $json);
-                    $json = str_replace(array('\n'), '\\', $json);
-                    $row = str_getcsv($json, '\n');
-                    $rlen = count($row) - 1;
-                    echo "<table class=\"table table-bordered\">";
-                    echo "<tbody>";
-                    
-                    for($i = 0; $i < $rlen; $i++) {
-                        $col = str_getcsv($row[$i], ',');
-                        $clen = count($col);
-                        echo "<tr>";
-                        for($j = 0; $j < $clen; $j++) {
-                            if ($col[$j] != "" || $j == 2) {
-                                echo "<td>$col[$j]</td>";
-                            }
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    $json = 0;
-                ?>
-                </div>
-                <div class="col col-lg-2">
-                </div>
-            </div>
-        </div>
-        <h3 class="text-center">/listCloseOnly/csv</h3>
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col col-lg-2">
-                </div>
-                <div class="col-md-auto">
-                <?php
-                    $json = file_get_contents('http://restapi/listCloseOnly/csv');
-                    $json = str_replace(array('\"', '"'), '', $json);
-                    $json = str_replace(array('\n'), '\\', $json);
-                    $row = str_getcsv($json, '\n');
-                    $rlen = count($row) - 1;
-                    echo "<table class=\"table table-bordered\">";
-                    echo "<tbody>";
-                    
-                    for($i = 0; $i < $rlen; $i++) {
-                        $col = str_getcsv($row[$i], ',');
-                        $clen = count($col);
-                        echo "<tr>";
-                        for($j = 0; $j < $clen; $j++) {
-                            if ($col[$j] != "" || $j == 2) {
-                                echo "<td>$col[$j]</td>";
-                            }
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    $json = 0;
-                ?>
-                </div>
-                <div class="col col-lg-2">
-                </div>
-            </div>
-        </div>
-        <h3 class="text-center">/listAll/json?top=2</h3>
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col col-lg-2">
-                </div>
-                <div class="col-md-auto">
-                <?php
-                    $json = file_get_contents('http://restapi/listAll/json?top=2');
-                    $obj = json_decode($json);
-                    $ddt = $obj->ddt;
-                    $header = $obj->header;
-                    $items = $obj->items;
-                    echo "<table class=\"table table-bordered\">";
-                    foreach ($ddt as $l) {
-                        echo "<tr>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</table>";
-                    echo "<br>";
-                    echo "<table class=\"table table-bordered\">";
-                    echo "<thead>";
-                    foreach ($header as $l) {
-                        echo "<tr>";
-                        echo "<th>#Brevet</th>";
-                        foreach($l as $i) {
-                            echo "<th>$i</th>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</thead>";
-                    $index = 1;
-                    echo "<tbody>";
-                    foreach ($items as $l) {
-                        echo "<tr>";
-                        echo "<th>$index</th>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                        $index++;
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    $json = 0;
-                ?>
-                </div>
-                <div class="col col-lg-2">
-                </div>
-            </div>
-        </div>
-
-        <h3 class="text-center">/listOpenOnly/json?top=5</h3>
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col col-lg-2">
-                </div>
-                <div class="col-md-auto">
-                <?php
-                    $json = file_get_contents('http://restapi/listOpenOnly/json?top=5');
-                    $obj = json_decode($json);
-                    $ddt = $obj->ddt;
-                    $header = $obj->header;
-                    $items = $obj->items;
-                    echo "<table class=\"table table-bordered\">";
-                    foreach ($ddt as $l) {
-                        echo "<tr>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</table>";
-                    echo "<br>";
-                    echo "<table class=\"table table-bordered\">";
-                    echo "<thead>";
-                    foreach ($header as $l) {
-                        echo "<tr>";
-                        echo "<th>#Brevet</th>";
-                        foreach($l as $i) {
-                            echo "<th>$i</th>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</thead>";
-                    $index = 1;
-                    echo "<tbody>";
-                    foreach ($items as $l) {
-                        echo "<tr>";
-                        echo "<th>$index</th>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                        $index++;
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    $json = 0;
-                ?>
-                </div>
-                <div class="col col-lg-2">
-                </div>
-            </div>
-        </div>
-
-        <h3 class="text-center">/listCloseOnly/json?top=4</h3>
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col col-lg-2">
-                </div>
-                <div class="col-md-auto">
-                <?php
-                    $json = file_get_contents('http://restapi/listCloseOnly/json?top=4');
-                    $obj = json_decode($json);
-                    $ddt = $obj->ddt;
-                    $header = $obj->header;
-                    $items = $obj->items;
-                    echo "<table class=\"table table-bordered\">";
-                    foreach ($ddt as $l) {
-                        echo "<tr>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</table>";
-                    echo "<br>";
-                    echo "<table class=\"table table-bordered\">";
-                    echo "<thead>";
-                    foreach ($header as $l) {
-                        echo "<tr>";
-                        echo "<th>#Brevet</th>";
-                        foreach($l as $i) {
-                            echo "<th>$i</th>";
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</thead>";
-                    $index = 1;
-                    echo "<tbody>";
-                    foreach ($items as $l) {
-                        echo "<tr>";
-                        echo "<th>$index</th>";
-                        foreach($l as $i) {
-                            echo "<td>$i</td>";
-                        }
-                        echo "</tr>";
-                        $index++;
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    $json = 0;
-                ?>
-                </div>
-                <div class="col col-lg-2">
-                </div>
-            </div>
-        </div>
-        <h3 class="text-center">/listAll/csv?top=2</h3>
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col col-lg-2">
-                </div>
-                <div class="col-md-auto">
-                <?php
-                    $json = file_get_contents('http://restapi/listAll/csv?top=2');
-                    $json = str_replace(array('\"', '"'), '', $json);
-                    $json = str_replace(array('\n'), '\\', $json);
-                    $row = str_getcsv($json, '\n');
-                    $rlen = count($row) - 1;
-                    echo "<table class=\"table table-bordered\">";
-                    echo "<tbody>";
-                    
-                    for($i = 0; $i < $rlen; $i++) {
-                        $col = str_getcsv($row[$i], ',');
-                        $clen = count($col);
-                        echo "<tr>";
-                        for($j = 0; $j < $clen; $j++) {
-                            if ($col[$j] != "" || $j == 2) {
-                                echo "<td>$col[$j]</td>";
-                            }
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    $json = 0;
-                ?>
-                </div>
-                <div class="col col-lg-2">
-                </div>
-            </div>
-        </div>
-        <h3 class="text-center">/listOpenOnly/csv?top=3</h3>
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col col-lg-2">
-                </div>
-                <div class="col-md-auto">
-                <?php
-                    $json = file_get_contents('http://restapi/listOpenOnly/csv?top=3');
-                    $json = str_replace(array('\"', '"'), '', $json);
-                    $json = str_replace(array('\n'), '\\', $json);
-                    $row = str_getcsv($json, '\n');
-                    $rlen = count($row) - 1;
-                    echo "<table class=\"table table-bordered\">";
-                    echo "<tbody>";
-                    
-                    for($i = 0; $i < $rlen; $i++) {
-                        $col = str_getcsv($row[$i], ',');
-                        $clen = count($col);
-                        echo "<tr>";
-                        for($j = 0; $j < $clen; $j++) {
-                            if ($col[$j] != "" || $j == 2) {
-                                echo "<td>$col[$j]</td>";
-                            }
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    $json = 0;
-                ?>
-                </div>
-                <div class="col col-lg-2">
-                </div>
-            </div>
-        </div>
-        <h3 class="text-center">/listCloseOnly/csv?top=5</h3>
-        <div class="container">
-            <div class="row justify-content-md-center">
-                <div class="col col-lg-2">
-                </div>
-                <div class="col-md-auto">
-                <?php
-                    $json = file_get_contents('http://restapi/listCloseOnly/csv?top=5');
-                    $json = str_replace(array('\"', '"'), '', $json);
-                    $json = str_replace(array('\n'), '\\', $json);
-                    $row = str_getcsv($json, '\n');
-                    $rlen = count($row) - 1;
-                    echo "<table class=\"table table-bordered\">";
-                    echo "<tbody>";
-                    
-                    for($i = 0; $i < $rlen; $i++) {
-                        $col = str_getcsv($row[$i], ',');
-                        $clen = count($col);
-                        echo "<tr>";
-                        for($j = 0; $j < $clen; $j++) {
-                            if ($col[$j] != "" || $j == 2) {
-                                echo "<td>$col[$j]</td>";
-                            }
-                        }
-                        echo "</tr>";
-                    }
-                    echo "</tbody>";
-                    echo "</table>";
-                    $json = 0;
-                ?>
-                </div>
-                <div class="col col-lg-2">
-                </div>
-            </div>
-        </div>
+         <h1>openOnlyJson</h1>
+            <?php
+            $json = file_get_contents('http://laptop-service/listOpenOnly/json');
+            $obj = json_decode($json);
+            
+              $openTime = $obj->openTime;
+              
+            echo "  Open:\n";
+            foreach ($openTime as $l) {
+                echo "<li>$l</li>";
+            }
+            ?>
+            
+         <h1>closeOnlyJson</h1>
+            <?php
+            $json = file_get_contents('http://laptop-service/listCloseOnly/json');
+            $obj = json_decode($json);
+            
+              $closeTime = $obj->closeTime;
+              
+            echo "  Close:\n";
+            foreach ($closeTime as $l) {
+                echo "<li>$l</li>";
+            }
+            ?>
+            
+         <h1>Json top 5 (open)</h1>
+            <?php
+            $json = file_get_contents('http://laptop-service/listOpenOnly/json?top=5');
+            $obj = json_decode($json);
+            
+              $openTime = $obj->openTime;
+              
+            echo "  Top 5 Open:\n";
+            foreach ($openTime as $l) {
+                echo "<li>$l</li>";
+            }
+            ?>
+            
+         <h1>Json top 4 (close)</h1>
+            <?php
+            $json = file_get_contents('http://laptop-service/listCloseOnly/json?top=4');
+            $obj = json_decode($json);
+            
+              $closeTime = $obj->closeTime;
+              
+            echo "  Top 4 Close:\n";
+            foreach ($closeTime as $l) {
+                echo "<li>$l</li>";
+            }
+            ?>
+          
+        <h1>listAllCsv</h1>
+            <?php
+            echo file_get_contents('http://laptop-service/listAll/csv');
+            ?>
+            
+        <h1>openOnlyCsv</h1>
+            <?php
+            echo file_get_contents('http://laptop-service/listOpenOnly/csv');
+            ?>
+            
+        <h1>closeOnlyCsv</h1>
+            <?php
+            echo file_get_contents('http://laptop-service/listCloseOnly/csv');
+            ?>
+            
+        <h1>Csv top 3 (Open)</h1>
+            <?php
+            echo file_get_contents('http://laptop-service/listOpenOnly/csv?top=3');
+            ?>
+         
+        <h1>Csv top 6 (Close)</h1>
+            <?php
+            echo file_get_contents('http://laptop-service/listCloseOnly/csv?top=6');
+            ?>
+  
+            
+        </ul>
     </body>
 </html>
