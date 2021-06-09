@@ -8,7 +8,7 @@
         <ul>
             <?php
             //our url
-            $json = file_get_contents('http://laptop-service/listAll');
+            $json = file_get_contents('http://restapi/listAll');
             $obj = json_decode($json);
             
             //open and close times from api.py
@@ -30,7 +30,7 @@
             
         <h1>listOpenOnly</h1>
             <?php
-            $json = file_get_contents('http://laptop-service/listOpenOnly');
+            $json = file_get_contents('http://restapi/listOpenOnly');
             $obj = json_decode($json);
               $openTime = $obj->openTime;
               
@@ -42,7 +42,7 @@
         
         <h1>listCloseOnly</h1>
             <?php
-            $json = file_get_contents('http://laptop-service/listCloseOnly');
+            $json = file_get_contents('http://restapi/listCloseOnly');
             $obj = json_decode($json);
               $closeTime = $obj->closeTime;
               
@@ -54,7 +54,7 @@
           
          <h1>listAllJson</h1>
             <?php
-            $json = file_get_contents('http://laptop-service/listAll/json');
+            $json = file_get_contents('http://restapi/listAll/json');
             $obj = json_decode($json);
             
               $openTime = $obj->openTime;
@@ -74,7 +74,7 @@
 
          <h1>openOnlyJson</h1>
             <?php
-            $json = file_get_contents('http://laptop-service/listOpenOnly/json');
+            $json = file_get_contents('http://restapi/listOpenOnly/json');
             $obj = json_decode($json);
             
               $openTime = $obj->openTime;
@@ -87,7 +87,7 @@
             
          <h1>closeOnlyJson</h1>
             <?php
-            $json = file_get_contents('http://laptop-service/listCloseOnly/json');
+            $json = file_get_contents('http://restapi/listCloseOnly/json');
             $obj = json_decode($json);
             
               $closeTime = $obj->closeTime;
@@ -100,7 +100,7 @@
             
          <h1>Json top 5 (open)</h1>
             <?php
-            $json = file_get_contents('http://laptop-service/listOpenOnly/json?top=5');
+            $json = file_get_contents('http://restapi/listOpenOnly/json?top=5');
             $obj = json_decode($json);
             
               $openTime = $obj->openTime;
@@ -113,7 +113,7 @@
             
          <h1>Json top 4 (close)</h1>
             <?php
-            $json = file_get_contents('http://laptop-service/listCloseOnly/json?top=4');
+            $json = file_get_contents('http://restapi/listCloseOnly/json?top=4');
             $obj = json_decode($json);
             
               $closeTime = $obj->closeTime;
@@ -126,27 +126,27 @@
           
         <h1>listAllCsv</h1>
             <?php
-            echo file_get_contents('http://laptop-service/listAll/csv');
+            echo file_get_contents('http://restapi/listAll/csv');
             ?>
             
         <h1>openOnlyCsv</h1>
             <?php
-            echo file_get_contents('http://laptop-service/listOpenOnly/csv');
+            echo file_get_contents('http://restapi/listOpenOnly/csv');
             ?>
             
         <h1>closeOnlyCsv</h1>
             <?php
-            echo file_get_contents('http://laptop-service/listCloseOnly/csv');
+            echo file_get_contents('http://restapi/listCloseOnly/csv');
             ?>
             
         <h1>Csv top 3 (Open)</h1>
             <?php
-            echo file_get_contents('http://laptop-service/listOpenOnly/csv?top=3');
+            echo file_get_contents('http://restapi/listOpenOnly/csv?top=3');
             ?>
          
         <h1>Csv top 6 (Close)</h1>
             <?php
-            echo file_get_contents('http://laptop-service/listCloseOnly/csv?top=6');
+            echo file_get_contents('http://restapi/listCloseOnly/csv?top=6');
             ?>
   
             
