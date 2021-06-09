@@ -28,4 +28,4 @@ if __name__ == "__main__":
         print(verify_auth_token(t))
         time.sleep(1)
 
-    print(verify_auth_token("somerandomstring"))
+

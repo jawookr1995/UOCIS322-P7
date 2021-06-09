@@ -24,7 +24,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = ('/api/login')
 
-app.config[SECRET_KEY] = "not actually secret"
+app.config['SECRET_KEY'] = "not actually secret"
 
 client = MongoClient(os.environ['DB_PORT_27017_TCP_ADDR'], 27017)
 db = client.tododb
@@ -124,9 +124,6 @@ def login():
         #get our user info from userclass
         userInfo = users.find({"username":username})
 
-        #if we index userInfo and get IndexError, that means
-        #that there is no such user. so we take them back to the
-        #register page
         try:
             userInfo[0]
         except IndexError:
