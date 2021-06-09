@@ -12,7 +12,7 @@ def verify_password(password, hashVal):
 if __name__ == "__main__":
     testPass = "UOCIS322"
     hashVal = hash_password(testPass)
-    print (hVal)
+    print (hashVal)
     if verify_password(testPass, hashVal):
         print ("Success")
     else:
