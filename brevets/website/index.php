@@ -16,7 +16,7 @@
                 </div>
                 <div class="col-md-auto">
                 <?php
-                    $json = file_get_contents('http://restapi/listAll');
+                    $json = file_get_contents('http://laptop-service/listAll');
                     $obj = json_decode($json);
                     $ddt = $obj->ddt;
                     $header = $obj->header;
@@ -70,7 +70,7 @@
                 </div>
                 <div class="col-md-auto">
                 <?php
-                    $json = file_get_contents('http://restapi/listOpenOnly');
+                    $json = file_get_contents('http://laptop-service/listOpenOnly');
                     $obj = json_decode($json);
                     $ddt = $obj->ddt;
                     $header = $obj->header;
@@ -124,7 +124,7 @@
                 </div>
                 <div class="col-md-auto">
                 <?php
-                    $json = file_get_contents('http://restapi/listCloseOnly');
+                    $json = file_get_contents('http://laptop-service/listCloseOnly');
                     $obj = json_decode($json);
                     $ddt = $obj->ddt;
                     $header = $obj->header;
@@ -178,7 +178,7 @@
                 </div>
                 <div class="col-md-auto">
                 <?php
-                    $json = file_get_contents('http://restapi/listAll/json');
+                    $json = file_get_contents('http://laptop-service/listAll/json');
                     $obj = json_decode($json);
                     $ddt = $obj->ddt;
                     $header = $obj->header;
@@ -232,7 +232,7 @@
                 </div>
                 <div class="col-md-auto">
                 <?php
-                    $json = file_get_contents('http://restapi/listOpenOnly/json');
+                    $json = file_get_contents('http://laptop-service/listOpenOnly/json');
                     $obj = json_decode($json);
                     $ddt = $obj->ddt;
                     $header = $obj->header;
@@ -286,7 +286,7 @@
                 </div>
                 <div class="col-md-auto">
                 <?php
-                    $json = file_get_contents('http://restapi/listCloseOnly/json');
+                    $json = file_get_contents('http://laptop-service/listCloseOnly/json');
                     $obj = json_decode($json);
                     $ddt = $obj->ddt;
                     $header = $obj->header;
@@ -339,7 +339,7 @@
                 </div>
                 <div class="col-md-auto">
                 <?php
-                    $json = file_get_contents('http://restapi/listAll/csv');
+                    $json = file_get_contents('http://laptop-service/listAll/csv');
                     $json = str_replace(array('\"', '"'), '', $json);
                     $json = str_replace(array('\n'), '\\', $json);
                     $row = str_getcsv($json, '\n');
@@ -374,7 +374,7 @@
                 </div>
                 <div class="col-md-auto">
                 <?php
-                    $json = file_get_contents('http://restapi/listOpenOnly/csv');
+                    $json = file_get_contents('http://laptop-service/listOpenOnly/csv');
                     $json = str_replace(array('\"', '"'), '', $json);
                     $json = str_replace(array('\n'), '\\', $json);
                     $row = str_getcsv($json, '\n');
@@ -409,7 +409,7 @@
                 </div>
                 <div class="col-md-auto">
                 <?php
-                    $json = file_get_contents('http://restapi/listCloseOnly/csv');
+                    $json = file_get_contents('http://laptop-service/listCloseOnly/csv');
                     $json = str_replace(array('\"', '"'), '', $json);
                     $json = str_replace(array('\n'), '\\', $json);
                     $row = str_getcsv($json, '\n');
@@ -444,7 +444,7 @@
                 </div>
                 <div class="col-md-auto">
                 <?php
-                    $json = file_get_contents('http://restapi/listAll/json?top=2');
+                    $json = file_get_contents('http://laptop-service/listAll/json?top=2');
                     $obj = json_decode($json);
                     $ddt = $obj->ddt;
                     $header = $obj->header;
@@ -498,7 +498,7 @@
                 </div>
                 <div class="col-md-auto">
                 <?php
-                    $json = file_get_contents('http://restapi/listOpenOnly/json?top=5');
+                    $json = file_get_contents('http://laptop-service/listOpenOnly/json?top=5');
                     $obj = json_decode($json);
                     $ddt = $obj->ddt;
                     $header = $obj->header;
@@ -552,7 +552,7 @@
                 </div>
                 <div class="col-md-auto">
                 <?php
-                    $json = file_get_contents('http://restapi/listCloseOnly/json?top=4');
+                    $json = file_get_contents('http://laptop-service/listCloseOnly/json?top=4');
                     $obj = json_decode($json);
                     $ddt = $obj->ddt;
                     $header = $obj->header;
@@ -605,7 +605,7 @@
                 </div>
                 <div class="col-md-auto">
                 <?php
-                    $json = file_get_contents('http://restapi/listAll/csv?top=2');
+                    $json = file_get_contents('http://laptop-service/listAll/csv?top=2');
                     $json = str_replace(array('\"', '"'), '', $json);
                     $json = str_replace(array('\n'), '\\', $json);
                     $row = str_getcsv($json, '\n');
@@ -640,7 +640,7 @@
                 </div>
                 <div class="col-md-auto">
                 <?php
-                    $json = file_get_contents('http://restapi/listOpenOnly/csv?top=3');
+                    $json = file_get_contents('http://laptop-service/listOpenOnly/csv?top=3');
                     $json = str_replace(array('\"', '"'), '', $json);
                     $json = str_replace(array('\n'), '\\', $json);
                     $row = str_getcsv($json, '\n');
@@ -675,7 +675,7 @@
                 </div>
                 <div class="col-md-auto">
                 <?php
-                    $json = file_get_contents('http://restapi/listCloseOnly/csv?top=5');
+                    $json = file_get_contents('http://laptop-service/listCloseOnly/csv?top=5');
                     $json = str_replace(array('\"', '"'), '', $json);
                     $json = str_replace(array('\n'), '\\', $json);
                     $row = str_getcsv($json, '\n');
