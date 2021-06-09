@@ -1,3 +1,4 @@
+import flask
 from flask import Flask, request, session
 from flask_restful import Resource, Api, reqparse
 import os
