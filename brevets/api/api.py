@@ -26,7 +26,7 @@ login_manager.login_view = ('/api/login')
 
 app.config['SECRET_KEY'] = "Not secret acutally"
 
-client = MongoClient(os.environ['DB_PORT_27017_TCP_ADDR'], 27017)
+client = MongoClient("db",27017)
 db = client.tododb
 users = db.userdb
 
@@ -183,10 +183,7 @@ def token():
 
 class ListAllJSON(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'please enter a token value in your link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'token could not be verified', 401
+
 
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
@@ -221,11 +218,7 @@ class ListAllJSON(Resource):
 
 class ListOpenOnlyJSON(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'please enter a token value in your link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'token could not be verified', 401
-
+        
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
@@ -254,11 +247,7 @@ class ListOpenOnlyJSON(Resource):
 
 class ListCloseOnlyJSON(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'please enter a token value in your link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'token could not be verified', 401
-
+        
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
@@ -287,11 +276,7 @@ class ListCloseOnlyJSON(Resource):
 
 class ListAllcsv(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'please enter a token value in your link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'token could not be verified', 401
-
+        
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
@@ -318,11 +303,7 @@ class ListAllcsv(Resource):
 
 class ListOpenOnlycsv(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'please enter a token value in your link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'token could not be verified', 401
-
+        
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
@@ -349,10 +330,6 @@ class ListOpenOnlycsv(Resource):
 
 class ListCloseOnlycsv(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'please enter a token value in your link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'token could not be verified', 401
         
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
