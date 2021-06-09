@@ -19,7 +19,7 @@ services:
     ports:
       - 5218:80  # host:container
     depends_on:
-      - restapi  
+      - laptop-service  
 
   web:
     build: ./brevetsapp
