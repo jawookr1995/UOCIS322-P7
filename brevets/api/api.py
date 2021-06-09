@@ -372,12 +372,17 @@ class closeCSV(Resource):
 # Another way, without decorators
 #api.add_resource(Laptop, '/')
 
-api.add_resource(ListAllJSON, '/listAll', '/listAll/json')
-api.add_resource(ListOpenOnlyJSON, '/listOpenOnly', '/listOpenOnly/json')
-api.add_resource(ListCloseOnlyJSON, '/listCloseOnly', '/listCloseOnly/json')
-api.add_resource(ListAllcsv, '/listAll/csv')
-api.add_resource(ListOpenOnlycsv, '/listOpenOnly/csv')
-api.add_resource(ListCloseOnlycsv, '/listCloseOnly/csv')
+api.add_resource(allL, '/listAll')
+api.add_resource(allJson, '/listAll/json')
+api.add_resource(allCSV, '/listAll/csv')
+
+api.add_resource(openL, '/listOpenOnly')
+api.add_resource(openJson, '/listOpenOnly/json')
+api.add_resource(openCSV, '/listOpenOnly/csv')
+
+api.add_resource(closeL, '/listCloseOnly')
+api.add_resource(closeJson, '/listCloseOnly/json')
+api.add_resource(closeCSV, '/listCloseOnly/csv')
 
 # Run the application
 if __name__ == '__main__':
