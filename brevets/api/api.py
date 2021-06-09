@@ -51,6 +51,7 @@ def register():
     form = RegisterForm(request.form)
     username = form.username.data
     password = form.password.data
+    password = hash_password(password)
     
     Id = "" 
 
@@ -155,7 +156,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return "You've been Logged out"
+    return "You are now logged out"
 
 #index page with login, logout, and register
 @app.route("/")
