@@ -1,11 +1,9 @@
-from flask import Flask, request, session
 import flask
-from flask import request
-from pymongo import MongoClient
-from flask_wtf.csrf import CSRFProtect
-import pymongo
-from flask_restful import Resource, Api
+from flask import Flask, request, session
+from flask_restful import Resource, Api, reqparse
 import os
+from flask_wtf.csrf import CSRFProtect
+from pymongo import MongoClient
 from random import randint
 from wtforms import Form, BooleanField, StringField, validators, PasswordField
 from passlib.apps import custom_app_context as pwd_context
@@ -20,24 +18,19 @@ from flask_login import (LoginManager, current_user, login_required,
 
 # Instantiate the app
 app = Flask(__name__)
-#csrf = CSRFProtect(app)
 api = Api(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = ('/api/login')
 
-app.config['SECRET_KEY'] = "Not Secret key actually"
+app.config['SECRET_KEY'] = "not actually secret"
 
-
-#from docker-compose.yml
 client = MongoClient(os.environ['DB_PORT_27017_TCP_ADDR'], 27017)
 db = client.tododb
 users = db.userdb
-#csrf_token = 'asdhfklh'
 
-
-#our register and login forms that coincide with register and login html files
+#form for register and log in.
 class RegisterForm(Form):
     username = StringField('Username', validators=[validators.DataRequired(message=u'Enter username')])
     password = PasswordField('Password', validators=[validators.DataRequired(message=u'Enter password')])
@@ -47,51 +40,48 @@ class LoginForm(Form):
     password = PasswordField('Password', validators=[validators.DataRequired(message=u'Enter password')])
     remember = BooleanField('Remember Me')
 
-#user class to get our IDs    
 class UserInfo(UserMixin):
     def __init__(self, user_id):
         self.id = str(user_id)
 
-
 @app.route("/api/register", methods=["GET", "POST"])
 def register():
 
-    #get user input from registration forms
+    # get the form for registering as users
     form = RegisterForm(request.form)
     username = form.username.data
     password = form.password.data
+    password = hash_password(password)
     
     Id = "" 
 
-    #take action once user has submitted
+    # if user has submitted the info
     if form.validate():
-        #get username in database
+        # get user name from db
         item = db.tododb.find_one({"username":username})
-        #make our random id for username
+        # give random id for username
         Id = randint(1,50000)
 
-        #if user/pass not found, return 400 error
+        # if username and password cannot be found, then return 400 error
         if (username == None) or (password == None):
             return 'no username or password given', 400
         if item != None:
             return 'try a different username', 400
 
-        #hash the password
+        # hash the password
         hashVal = hash_password(password)
 
-        #add our new user with its info into our users database
+        # add new info of user into database
         new = {"_id": Id, 'username': username, 'password': hashVal}
         users.insert_one(new)
 
-        #push this result out from above in json format
         result = {'location': Id, 'username': username, 'password': hashVal}
         
         return flask.jsonify(result=result), 201
 
-    #back to register if never submitted or got here from error
+    # If error happens or nothing submitted in register, go back to registration page
     return flask.render_template('register.html', form=form)
 
-#loads and returns the user and its ID
 @login_manager.user_loader
 def load_user(user_id):
     userInfo = users.find({"_id": int(user_id)})
@@ -135,9 +125,6 @@ def login():
         #get our user info from userclass
         userInfo = users.find({"username":username})
 
-        #if we index userInfo and get IndexError, that means
-        #that there is no such user. so we take them back to the
-        #register page
         try:
             userInfo[0]
         except IndexError:
@@ -145,8 +132,8 @@ def login():
         
         #get our password from userInfo and make sure its right for the user   
         entry = userInfo[0]
-        hVal = entry['password']
-        if verify_password(password, hVal) is True:
+        hashVal = entry['password']
+        if verify_password(password, hashVal) is True:
 
             #now get the username ID and create an active session
             #entryTwo=userInfo[0]
@@ -192,197 +179,174 @@ def token():
     result = {'token': retToken, 'duration': 60}
     return flask.jsonify(result=result)
 
-#all values, in json by default
-class allL(Resource):
+class ListAllJSON(Resource):
     def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('top', type=int, location='args')
+        args = parser.parse_args()
 
-        #get the token the user put in the url, and verify its the right one
-        #respond appropriately if not
-        #do this for all the APIs
-        token = request.args.get('token')
-        if token == None: return 'please enter a token value in your link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'token could not be verified', 401
+        items = []
+        _dist_date_time = db.tododb.find({}, { "distance": 1, "begin_date": 1, "begin_time": 1})
+        dist_date_time = []
+        i = 0
+        dist_date_time.append(["distance", "begin_date", "begin_time"])
+        for ddt in _dist_date_time:
+            if i == 0:
+                dist_date_time.append([ddt['distance'], ddt['begin_date'], ddt['begin_time']])
+            i += 1
+        _items = db.tododb.find({}, { "distance": 0, "begin_date": 0, "begin_time": 0}).sort("km")
 
-        #checks the URL and grabs any top value user may have entered (i.e. top = 3)
-        top = request.args.get("top")
+        header = []
+        header.append(["miles", "km", "location", "open", "close"])
+        i = 0
+        for item in _items:
+            if i - 1 == args['top']:
+                break
+            if i > 0:
+                items.append([item['miles'], item['km'], item['location'], item['open'], item['close']])
+            i += 1
+        return {'header': header, 'items': items, 'ddt': dist_date_time}
 
-        #if user didn't give us any top, then we are just going to display 20 values
-        #as stated in the default size from calc.html
-        if (top == None): top = 20
-
-        #grab the items the user inputed
-        #in the case the user submitted a top value, we want to be in ascending order
-        #as stated in the README when there are top values. So pymongo function
-        #ASCENDING will accomplish this
-        #limit the values by user entered top or by 20
-        _items = db.tododb.find().sort("openTime", pymongo.ASCENDING).limit(int(top))
-
-        #set up our list / unpack it some
-        items = [item for item in _items]
-
-       #collect open and close times from _items and our variables in new() from app.py
-        return {
-            'openTime': [item['open'] for item in items],
-            'closeTime': [item['close'] for item in items]
-        }
-
-
-class allJson(Resource):
+class ListOpenOnlyJSON(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'please enter a token value in your link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'token could not be verified', 401
-        
-        top = request.args.get("top")
-        if (top == None): top = 20
+        parser = reqparse.RequestParser()
+        parser.add_argument('top', type=int, location='args')
+        args = parser.parse_args()
 
-        _items = db.tododb.find().sort("openTime", pymongo.ASCENDING).limit(int(top))
-        items = [item for item in _items]
-   
-        return {
-            'openTime': [item['open_list'] for item in items],
-            'closeTime': [item['close_list'] for item in items]
-        }
+        items = []
+        _dist_date_time = db.tododb.find({}, { "distance": 1, "begin_date": 1, "begin_time": 1})
+        dist_date_time = []
+        i = 0
+        dist_date_time.append(["distance", "begin_date", "begin_time"])
+        for ddt in _dist_date_time:
+            if i == 0:
+                dist_date_time.append([ddt['distance'], ddt['begin_date'], ddt['begin_time']])
+            i += 1
+        _items = db.tododb.find({}, { "miles": 1, "km": 1, "open": 1}).sort("km")
 
-class allCSV(Resource):
+        header = []
+        header.append(["miles", "km", "open"])
+        i = 0
+        for item in _items:
+            if i - 1 == args['top']:
+                break
+            if i > 0:
+                items.append([item['miles'], item['km'], item['open']])
+            i += 1
+        return {'header': header, 'items': items, 'ddt': dist_date_time}
+
+class ListCloseOnlyJSON(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'please enter a token value in your link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'token could not be verified', 401
-        
-        top = request.args.get("top")
-        if (top == None): top = 20
+        parser = reqparse.RequestParser()
+        parser.add_argument('top', type=int, location='args')
+        args = parser.parse_args()
 
-        _items = db.tododb.find().sort("openTime", pymongo.ASCENDING).limit(int(top))
-        items = [item for item in _items]
+        items = []
+        _dist_date_time = db.tododb.find({}, { "distance": 1, "begin_date": 1, "begin_time": 1})
+        dist_date_time = []
+        i = 0
+        dist_date_time.append(["distance", "begin_date", "begin_time"])
+        for ddt in _dist_date_time:
+            if i == 0:
+                dist_date_time.append([ddt['distance'], ddt['begin_date'], ddt['begin_time']])
+            i += 1
+        _items = db.tododb.find({}, { "miles": 1, "km": 1, "close": 1}).sort("km")
 
-        #split each value up by a comma and loop through the list and add
-        csv = ""
-        for item in items:
-            csv += item['open_list'] + ', ' + item['close_list'] + ', '
+        header = []
+        header.append(["miles", "km", "close"])
+        i = 0
+        for item in _items:
+            if i - 1 == args['top']:
+                break
+            if i > 0:
+                items.append([item['miles'], item['km'], item['close']])
+            i += 1
+        return {'header': header, 'items': items, 'ddt': dist_date_time}
 
-        return csv
-
-class openL(Resource):
+class ListAllcsv(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'please enter a token value in your link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'token could not be verified', 401
-        
-        top = request.args.get("top")
-        if (top == None): top = 20
+        parser = reqparse.RequestParser()
+        parser.add_argument('top', type=int, location='args')
+        args = parser.parse_args()
 
-        _items = db.tododb.find().sort("openTime", pymongo.ASCENDING).limit(int(top))
+        _dist_date_time = db.tododb.find({}, { "distance": 1, "begin_date": 1, "begin_time": 1})
+        i = 0
+        ret = "\"distance\",\"begin_date\",\"begin_time\"\n"
+        for ddt in _dist_date_time:
+            if i == 0:
+               ret += "\"" + ddt['distance'] + "\",\"" + ddt['begin_date'] + "\",\"" + ddt['begin_time'] + "\"\n"
+            i += 1
+        _items = db.tododb.find({}, { "distance": 0, "begin_date": 0, "begin_time": 0}).sort("km")
 
-        return {
-            'openTime': [item['open_list'] for item in _items]
-        }
+        ret += "\"miles\",\"km\",\"location\",\"open\",\"close\"\n"
+        i = 0
+        for item in _items:
+            if i - 1 == args['top']:
+                break
+            if i > 0:
+                ret += "\"" + str(item['miles']) + "\",\"" + str(item['km']) + "\",\"" + item['location'] + "\",\"" + item['open'] + "\",\"" + item['close']+ "\"\n"
+            i += 1
 
-class openJson(Resource):
+        return ret
+
+class ListOpenOnlycsv(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'please enter a token value in your link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'token could not be verified', 401
-        
-        top = request.args.get("top")
-        if (top == None): top = 20
+        parser = reqparse.RequestParser()
+        parser.add_argument('top', type=int, location='args')
+        args = parser.parse_args()
 
-        _items = db.tododb.find().sort("openTime", pymongo.ASCENDING).limit(int(top))
-        
-        return {
-            'openTime': [item['open_list'] for item in _items]
-        }
+        _dist_date_time = db.tododb.find({}, { "distance": 1, "begin_date": 1, "begin_time": 1})
+        i = 0
+        ret = "\"distance\",\"begin_date\",\"begin_time\"\n"
+        for ddt in _dist_date_time:
+            if i == 0:
+               ret += "\"" + ddt['distance'] + "\",\"" + ddt['begin_date'] + "\",\"" + ddt['begin_time'] + "\"\n"
+            i += 1
+        _items = db.tododb.find({}, { "distance": 0, "begin_date": 0, "begin_time": 0}).sort("km")
 
-class openCSV(Resource):
+        ret += "\"miles\",\"km\",\"location\",\"open\"\n"
+        i = 0
+        for item in _items:
+            if i - 1 == args['top']:
+                break
+            if i > 0:
+                ret += "\"" + str(item['miles']) + "\",\"" + str(item['km']) + "\",\"" + item['location'] + "\",\"" + item['open'] + "\"\n"
+            i += 1
+
+        return ret
+
+class ListCloseOnlycsv(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'please enter a token value in your link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'token could not be verified', 401
-        
-        top = request.args.get("top")
-        if (top == None): top = 20
+        parser = reqparse.RequestParser()
+        parser.add_argument('top', type=int, location='args')
+        args = parser.parse_args()
 
-        _items = db.tododb.find().sort("openTime", pymongo.ASCENDING).limit(int(top))
-        items = [item for item in _items]
+        _dist_date_time = db.tododb.find({}, { "distance": 1, "begin_date": 1, "begin_time": 1})
+        i = 0
+        ret = "\"distance\",\"begin_date\",\"begin_time\"\n"
+        for ddt in _dist_date_time:
+            if i == 0:
+               ret += "\"" + ddt['distance'] + "\",\"" + ddt['begin_date'] + "\",\"" + ddt['begin_time'] + "\"\n"
+            i += 1
+        _items = db.tododb.find({}, { "distance": 0, "begin_date": 0, "begin_time": 0}).sort("km")
 
-        csv = ""
-        for item in items:
-            csv += item['open_list'] + ', '
-        return csv
+        ret += "\"miles\",\"km\",\"location\",\"close\"\n"
+        i = 0
+        for item in _items:
+            if i - 1 == args['top']:
+                break
+            if i > 0:
+                ret += "\"" + str(item['miles']) + "\",\"" + str(item['km']) + "\",\"" + item['location'] + "\",\"" + "\",\"" + item['close']+ "\"\n"
+            i += 1
 
-class closeL(Resource):
-    def get(self):
-        token = request.args.get('token')
-        if token == None: return 'please enter a token value in your link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'token could not be verified', 401
-        
-        top = request.args.get("top")
-        if (top == None): top = 20
+        return ret
 
-        #sort by closeTime now
-        _items = db.tododb.find().sort("closeTime", pymongo.ASCENDING).limit(int(top))
-
-        return {
-            'closeTime': [item['close_list'] for item in _items]
-        }
-
-class closeJson(Resource):
-    def get(self):
-        token = request.args.get('token')
-        if token == None: return 'please enter a token value in your link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'token could not be verified', 401
-        
-        top = request.args.get("top")
-        if (top == None): top = 20
-
-        _items = db.tododb.find().sort("closeTime", pymongo.ASCENDING).limit(int(top))
-
-        return {
-            'closeTime': [item['close_list'] for item in _items]
-        }
-
-class closeCSV(Resource):
-    def get(self):
-        token = request.args.get('token')
-        if token == None: return 'please enter a token value in your link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'token could not be verified', 401
-        
-        top = request.args.get("top")
-        if (top == None): top = 20
-
-        _items = db.tododb.find().sort("closeTime", pymongo.ASCENDING).limit(int(top))
-        items = [item for item in _items]
-
-
-        csv = ""
-        for item in items:
-            csv += item['close_list'] + ', '
-        return csv
-
-# Create routes
-# Another way, without decorators
-#api.add_resource(Laptop, '/')
-
-api.add_resource(allL, '/listAll')
-api.add_resource(allJson, '/listAll/json')
-api.add_resource(allCSV, '/listAll/csv')
-
-api.add_resource(openL, '/listOpenOnly')
-api.add_resource(openJson, '/listOpenOnly/json')
-api.add_resource(openCSV, '/listOpenOnly/csv')
-
-api.add_resource(closeL, '/listCloseOnly')
-api.add_resource(closeJson, '/listCloseOnly/json')
-api.add_resource(closeCSV, '/listCloseOnly/csv')
+api.add_resource(ListAllJSON, '/listAll', '/listAll/json')
+api.add_resource(ListOpenOnlyJSON, '/listOpenOnly', '/listOpenOnly/json')
+api.add_resource(ListCloseOnlyJSON, '/listCloseOnly', '/listCloseOnly/json')
+api.add_resource(ListAllcsv, '/listAll/csv')
+api.add_resource(ListOpenOnlycsv, '/listOpenOnly/csv')
+api.add_resource(ListCloseOnlycsv, '/listCloseOnly/csv')
 
 # Run the application
 if __name__ == '__main__':
