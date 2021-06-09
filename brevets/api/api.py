@@ -185,7 +185,7 @@ class ListAllJSON(Resource):
         if token == None: return 'please enter a token value in your link', 401
         verify = verify_auth_token(token)
         if verify == None: return 'token could not be verified', 401
-        else
+        else:
             parser = reqparse.RequestParser()
             parser.add_argument('top', type=int, location='args')
             args = parser.parse_args()
@@ -218,7 +218,7 @@ class ListOpenOnlyJSON(Resource):
         if token == None: return 'please enter a token value in your link', 401
         verify = verify_auth_token(token)
         if verify == None: return 'token could not be verified', 401
-        else
+        else:
             parser = reqparse.RequestParser()
             parser.add_argument('top', type=int, location='args')
             args = parser.parse_args()
@@ -251,7 +251,7 @@ class ListCloseOnlyJSON(Resource):
         if token == None: return 'please enter a token value in your link', 401
         verify = verify_auth_token(token)
         if verify == None: return 'token could not be verified', 401
-        else
+        else:
             parser = reqparse.RequestParser()
             parser.add_argument('top', type=int, location='args')
             args = parser.parse_args()
@@ -284,7 +284,7 @@ class ListAllcsv(Resource):
         if token == None: return 'please enter a token value in your link', 401
         verify = verify_auth_token(token)
         if verify == None: return 'token could not be verified', 401
-        else
+        else:
             parser = reqparse.RequestParser()
             parser.add_argument('top', type=int, location='args')
             args = parser.parse_args()
@@ -315,7 +315,7 @@ class ListOpenOnlycsv(Resource):
         if token == None: return 'please enter a token value in your link', 401
         verify = verify_auth_token(token)
         if verify == None: return 'token could not be verified', 401
-        else
+        else:
             parser = reqparse.RequestParser()
             parser.add_argument('top', type=int, location='args')
             args = parser.parse_args()
@@ -346,7 +346,7 @@ class ListCloseOnlycsv(Resource):
         if token == None: return 'please enter a token value in your link', 401
         verify = verify_auth_token(token)
         if verify == None: return 'token could not be verified', 401
-        else
+        else:
             parser = reqparse.RequestParser()
             parser.add_argument('top', type=int, location='args')
             args = parser.parse_args()
