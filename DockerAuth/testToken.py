@@ -19,7 +19,7 @@ def verify_auth_token(token):
         return "Expired token!"    # valid token, but expired
     except BadSignature:
         return "Invalid token!"    # invalid token
-    return f"Success! Welcome {data['username']}."
+    return "Success"
 
 
 if __name__ == "__main__":
