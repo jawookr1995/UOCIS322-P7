@@ -242,8 +242,8 @@ class allJson(Resource):
         items = [item for item in _items]
    
         return {
-            'openTime': [item['open'] for item in items],
-            'closeTime': [item['close'] for item in items]
+            'openTime': [item['open_list'] for item in items],
+            'closeTime': [item['close_list'] for item in items]
         }
 
 class allCSV(Resource):
