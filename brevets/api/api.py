@@ -33,11 +33,11 @@ users = db.userdb
 #form for register and log in.
 class RegisterForm(Form):
     username = StringField('Username', validators=[validators.DataRequired(message=u'Enter username')])
-    password = StringField('Password', validators=[validators.DataRequired(message=u'Enter password')])
+    password = PasswordField('Password', validators=[validators.DataRequired(message=u'Enter password')])
     
 class LoginForm(Form):
     username = StringField('Username', validators=[validators.DataRequired(message=u'Enter username')])
-    password = StringField('Password', validators=[validators.DataRequired(message=u'Enter password')])
+    password = PasswordField('Password', validators=[validators.DataRequired(message=u'Enter password')])
     remember = BooleanField('Remember Me')
 
 class UserInfo(UserMixin):
