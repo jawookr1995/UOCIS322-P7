@@ -26,7 +26,7 @@ login_manager.login_view = ('/api/login')
 
 app.config['SECRET_KEY'] = "Not secret acutally"
 
-client = MongoClient("db",27017)
+client = MongoClient(os.environ['DB_PORT_27017_TCP_ADDR'], 27017)
 db = client.tododb
 users = db.userdb
 
@@ -183,7 +183,6 @@ def token():
 
 class ListAllJSON(Resource):
     def get(self):
-
 
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
