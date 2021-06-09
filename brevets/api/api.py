@@ -24,7 +24,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = ('/api/login')
 
-app.config['SECRET_KEY'] = "Not secret acutally"
+SECRET_KEY = ""
 
 client = MongoClient(os.environ['DB_PORT_27017_TCP_ADDR'], 27017)
 db = client.tododb
@@ -183,7 +183,6 @@ def token():
 
 class ListAllJSON(Resource):
     def get(self):
-
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
@@ -202,11 +201,6 @@ class ListAllJSON(Resource):
         header = []
         header.append(["miles", "km", "location", "open", "close"])
         i = 0
-        token = request.args_get('token')
-        if token == None:return 'please enter token value', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'token cannot be verified', 401
-        if (top == None) :top = 20
         for item in _items:
             if i - 1 == args['top']:
                 break
@@ -217,7 +211,6 @@ class ListAllJSON(Resource):
 
 class ListOpenOnlyJSON(Resource):
     def get(self):
-        
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
@@ -246,7 +239,6 @@ class ListOpenOnlyJSON(Resource):
 
 class ListCloseOnlyJSON(Resource):
     def get(self):
-        
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
@@ -275,7 +267,6 @@ class ListCloseOnlyJSON(Resource):
 
 class ListAllcsv(Resource):
     def get(self):
-        
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
@@ -302,7 +293,6 @@ class ListAllcsv(Resource):
 
 class ListOpenOnlycsv(Resource):
     def get(self):
-        
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
@@ -329,7 +319,6 @@ class ListOpenOnlycsv(Resource):
 
 class ListCloseOnlycsv(Resource):
     def get(self):
-        
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
