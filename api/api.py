@@ -351,8 +351,8 @@ class protected(Resource):
         if(verify_auth_token(token)):
             _items = db.tododb.find()
             items = [item for item in _items]
-            return {'open_time':[item['open'] for item in items],
-            'close_time':[item['close'] for item in items]}
+            return {'open_time':[item['open_time'] for item in items],
+            'close_time':[item['close_time'] for item in items]}
         else:
             return "Unauthorized", 401
 
