@@ -10,7 +10,7 @@ services:
     environment: 
       - DB_PORT_27017_TCP_ADDR=db
     depends_on: 
-      - db
+      - web
 
   website:
     image: php:apache
@@ -27,7 +27,7 @@ services:
     ports:
       - "5318:5000"
     volumes:
-      - ./brevetsapp:/index
+      - ./brevetsapp:/todo
     environment: 
       - DB_PORT_27017_TCP_ADDR=db
     depends_on: 

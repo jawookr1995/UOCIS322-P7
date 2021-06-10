@@ -1,382 +1,388 @@
+# Laptop Service
 import flask
-from flask import Flask, request, session
-from flask_restful import Resource, Api, reqparse
-import os
-from flask_wtf.csrf import CSRFProtect
+from flask import Flask,request,render_template,make_response,jsonify,url_for,redirect
+from flask_restful import Resource, Api
 from pymongo import MongoClient
-from random import randint
-from wtforms import Form, BooleanField, StringField, validators, PasswordField
+import pymongo
+from flask_login import LoginManager,login_user,logout_user, login_required
+from wtforms import Form, BooleanField,StringField,validators,PasswordField
+from wtforms.validators import InputRequired, Length
+from flask_wtf import FlaskForm
+from urllib.parse import urlparse,urljoin
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer \
                                   as Serializer, BadSignature, \
                                   SignatureExpired)
-import time
-from flask import Flask, request, render_template, redirect, url_for, flash
-from flask_login import (LoginManager, current_user, login_required,
-                            login_user, logout_user, UserMixin, 
-                            confirm_login, fresh_login_required)
-
 # Instantiate the app
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'UOCIS322'
+app.config["LENGTH"] = 0
 api = Api(app)
+
+client = MongoClient("db", 27017)
+db = client.tododb
+# databse for the users
+users = client.usersdb
+# users.usersdb.delete_many({})
+#global value for the user_id
+#set login configuration
+collection = db.control
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = ('/api/login')
+login_manager.login_view = "login"
 
-app.config['SECRET_KEY'] = "not actually secret"
-
-client = MongoClient(os.environ['DB_PORT_27017_TCP_ADDR'], 27017)
-db = client.tododb
-users = db.userdb
-
-#form for register and log in.
-class RegisterForm(Form):
-    username = StringField('Username', validators=[validators.DataRequired(message=u'Enter username')])
-    password = PasswordField('Password', validators=[validators.DataRequired(message=u'Enter password')])
-    
-class LoginForm(Form):
-    username = StringField('Username', validators=[validators.DataRequired(message=u'Enter username')])
-    password = PasswordField('Password', validators=[validators.DataRequired(message=u'Enter password')])
-    remember = BooleanField('Remember Me')
-
-class UserInfo(UserMixin):
+class user():
     def __init__(self, user_id):
-        self.id = str(user_id)
-
-@app.route("/api/register", methods=["GET", "POST"])
-def register():
-
-    # get the form for registering as users
-    form = RegisterForm(request.form)
-    username = form.username.data
-    password = form.password.data
-    
-    
-    Id = "" 
-
-    # if user has submitted the info
-    if form.validate():
-        # get user name from db
-        item = db.tododb.find_one({"username":username})
-        # give random id for username
-        Id = randint(1,50000)
-
-        # if username and password cannot be found, then return 400 error
-        if (username == None) or (password == None):
-            return 'no username or password given', 400
-        if item != None:
-            return 'try a different username', 400
-
-        # hash the password
-        hashVal = hash_password(password)
-
-        # add new info of user into database
-        new = {"_id": Id, 'username': username, 'password': hashVal}
-        users.insert_one(new)
-
-        result = {'location': Id, 'username': username, 'password': hashVal}
-        
-        return flask.jsonify(result=result), 201
-
-    # If error happens or nothing submitted in register, go back to registration page
-    return flask.render_template('register.html', form=form)
+        self.user_id = user_id
+    #whithout this it will ge error
+    def is_authenticated(self):
+        return True
+    def is_active(self):
+        return True
+    def is_anonymous(self):
+        return False
+    def get_id(self):
+        return self.user_id
+class RegisterForm(FlaskForm):
+    username = StringField("username", validators = [InputRequired("Username is Required"),Length(min = 4, max = 20)])
+    password = PasswordField("password", validators = [InputRequired("Password is Required")])
+class LoginForm(FlaskForm):
+    username =  StringField("username", validators = [InputRequired("Username is Required"),Length(min = 4, max = 20)])
+    password = PasswordField("password", validators = [InputRequired("Password is Required")])
+    remember = BooleanField("Remember Me")
 
 @login_manager.user_loader
-def load_user(user_id):
-    userInfo = users.find({"_id": int(user_id)})
-    if (userInfo == None): return None
-    return UserInfo(user_id)
+def load_user(user_id, _token = None):
+    #find the user in the database
+    usr = users.usersdb.find_one({"location": int(user_id)})
+    if user == None:
+        return None
+    #if user equal None then return None
+    #otherwise return the _id in the database
+    return user(usr['location'])
+##########################################################
+#project8:
+@app.route("/")
+def index():
+    return render_template("index.html")
 
-#encrypts password so its not the say 10 characters user entered
+@app.route("/login", methods = ['GET', 'POST'])
+def login():
+    login_form = LoginForm()
+    username = login_form.username.data
+    password = login_form.password.data
+    remember = login_form.remember.data
+
+    if request.method == 'POST' and login_form.validate_on_submit():
+        #try to find the username in the database
+        user_in_db = users.usersdb.find_one({"username": username})
+        if user_in_db == None: #which means the user not found in the database
+            return "<h1> User not Found</h1>"
+        else:
+            hash_password = user_in_db["password"]
+            if verify_password(password, hash_password):
+                user_id = str(user_in_db['location'])
+                user_obj = user(user_id)
+                login_user(user_obj,remember = remember)
+                token = generate_auth_token(user_in_db['location'], expiration = 300)
+                return flask.jsonify({"token":token.decode(), "duration": 300}), 200
+            else:
+                return "<h1>Wrong Password</h1>"
+
+    return render_template("login.html", form = login_form)
+
+@app.route("/register", methods = ['GET', 'POST'])
+def register_user():
+    form = RegisterForm()
+    username = form.username.data
+    password = form.password.data
+    item = users.usersdb.find_one({"username": username})
+    if username is None or password is None:
+        return render_template("register.html", form = form)
+    elif item is not None:
+        return "User Exists", 400
+    else:
+        password = hash_password(str(password))
+        passwor = None
+        app.config["LENGTH"] += 1
+        _id = app.config["LENGTH"]
+        new_user = { 'location' : _id, 'username' : username, 'password' : password}
+        users.usersdb.insert_one(new_user)
+        return redirect(url_for(login_manager.login_view))
+
+#logout
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return "<h1>User logged out</h1>"
+
+
+
 def hash_password(password):
     return pwd_context.encrypt(password)
 
-#checks if password matches on login
 def verify_password(password, hashVal):
     return pwd_context.verify(password, hashVal)
 
-#generate our token
-def generate_auth_token(user_id, expiration=600):
-    s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
-    # pass index of user
-    token = s.dumps({'id': user_id})
-    return {'token': token, 'duration': expiration}
+def generate_auth_token(_id, expiration = 600):
+    s = Serializer(app.config['SECRET_KEY'], expires_in = expiration)
+    #pass the index of users
+    return s.dumps({'id':_id})
 
-#verify our token
 def verify_auth_token(token):
     s = Serializer(app.config['SECRET_KEY'])
+
     try:
         data = s.loads(token)
     except SignatureExpired:
         return None    # valid token, but expired
     except BadSignature:
         return None    # invalid token
-    return "Success"
+    return True
 
-@app.route("/api/login", methods=["GET", "POST"])
-def login():
-    # get the forms
-    form = LoginForm(request.form)
-    if (request.method == "POST") and (form.validate()):
-        username = form.username.data
-        password = form.password.data
-        rememberl = form.remember.data
-        #get our user info from userclass
-        userInfo = users.find({"username":username})
 
-        try:
-            userInfo[0]
-        except IndexError:
-            return redirect(url_for("register"))
-        
-        #get our password from userInfo and make sure its right for the user   
-        entry = userInfo[0]
-        hashVal = entry['password']
-        if verify_password(password, hashVal) is True:
 
-            #now get the username ID and create an active session
-            actID = entry['_id']
-            session['user_id'] = actID
-            user = UserInfo(actID)
-            
-            #User log in
-            login_user(user, remember = rememberl)
-            return redirect(request.args.get("next") or url_for("token"))
-
-        #if they ran into an issue and they get here, they'll be sent back to register
-        else: return redirect(url_for("register"))
-
-    #login page          
-    return flask.render_template('login.html', form=form)
-
-#logout the user and send them back to the index page to choose from options
-@app.route("/api/logout")
-@login_required
-def logout():
-    logout_user()
-    return "You are now logged out"
-
-#index page with login, logout, and register
-@app.route("/")
-def index():
-    return flask.render_template("index.html")
-
-#sets up our token               
-@app.route("/api/token", methods=['GET'])
-@login_required
-def token():
-    #get user_id from session
-    user_id = session.get('user_id')
-    #generate token for user
-    tokenInfo = generate_auth_token(user_id, 600)
-    #get token in proper form
-    retToken = tokenInfo['token']
-    retToken = retToken.decode('utf-8')
-    
-    #now return the token and the duration in json, for now just set as 60.
-    result = {'token': retToken, 'duration': 60}
-    return flask.jsonify(result=result)
-
-class ListAllJSON(Resource):
+class listAll(Resource):
     def get(self):
-        #Get token that is written by user in url and verify the token
-        token = request.args.get('token')
-        if token == None: return 'Token value is not included in link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'Wrong Token, cannot verify', 401
+        top = request.args.get("top")
+        if top == None:
+            top = 20
 
-        parser = reqparse.RequestParser()
-        parser.add_argument('top', type=int, location='args')
-        args = parser.parse_args()
 
-        items = []
-        _dist_date_time = db.tododb.find({}, { "distance": 1, "begin_date": 1, "begin_time": 1})
-        dist_date_time = []
-        i = 0
-        dist_date_time.append(["distance", "begin_date", "begin_time"])
-        for ddt in _dist_date_time:
-            if i == 0:
-                dist_date_time.append([ddt['distance'], ddt['begin_date'], ddt['begin_time']])
-            i += 1
-        _items = db.tododb.find({}, { "distance": 0, "begin_date": 0, "begin_time": 0}).sort("km")
+        _items = db.tododb.find()
+        sort_items = _items.sort('open_time')
+        k_items = sort_items.limit(int(top))
+        items = [item for item in k_items]
 
-        header = []
-        header.append(["miles", "km", "location", "open", "close"])
-        i = 0
-        for item in _items:
-            if i - 1 == args['top']:
-                break
-            if i > 0:
-                items.append([item['miles'], item['km'], item['location'], item['open'], item['close']])
-            i += 1
-        return {'header': header, 'items': items, 'ddt': dist_date_time}
+        return{
+        'open_time':[item['open_time'] for item in items],
+        'close_time':[item['close_time'] for item in items],
+        'km':[item['km'] for item in items]
 
-class ListOpenOnlyJSON(Resource):
+        }
+
+class listOpenOnly(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'Token value is not included in link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'Wrong Token, cannot verify', 401
+        top = request.args.get("top")
+        if top == None:
+            top = 20
+        _items = db.tododb.find()
+        sort_items = _items.sort("open_time")
+        k_items = sort_items.limit(int(top))
 
-        parser = reqparse.RequestParser()
-        parser.add_argument('top', type=int, location='args')
-        args = parser.parse_args()
+        return{
+        'open_time':[item['open_time'] for item in k_items],
+        'km':[item['km'] for item in k_items]
 
-        items = []
-        _dist_date_time = db.tododb.find({}, { "distance": 1, "begin_date": 1, "begin_time": 1})
-        dist_date_time = []
-        i = 0
-        dist_date_time.append(["distance", "begin_date", "begin_time"])
-        for ddt in _dist_date_time:
-            if i == 0:
-                dist_date_time.append([ddt['distance'], ddt['begin_date'], ddt['begin_time']])
-            i += 1
-        _items = db.tododb.find({}, { "miles": 1, "km": 1, "open": 1}).sort("km")
+        }
+#
+#
 
-        header = []
-        header.append(["miles", "km", "open"])
-        i = 0
-        for item in _items:
-            if i - 1 == args['top']:
-                break
-            if i > 0:
-                items.append([item['miles'], item['km'], item['open']])
-            i += 1
-        return {'header': header, 'items': items, 'ddt': dist_date_time}
-
-class ListCloseOnlyJSON(Resource):
+class listCloseOnly(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'Token value is not included in link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'Wrong Token, cannot verify', 401
+         top = request.args.get("top")
+         if top == None:
+              top =20
+         _items = db.tododb.find()
+         sort_items = _items.sort("close_time")
+         k_items = sort_items.limit(int(top))
 
-        parser = reqparse.RequestParser()
-        parser.add_argument('top', type=int, location='args')
-        args = parser.parse_args()
+         return {
+         'close_time':[item['close_time'] for item in k_items],
+         'km':[item['km'] for item in k_items]
+         }
+#
+# ##################################################
 
-        items = []
-        _dist_date_time = db.tododb.find({}, { "distance": 1, "begin_date": 1, "begin_time": 1})
-        dist_date_time = []
-        i = 0
-        dist_date_time.append(["distance", "begin_date", "begin_time"])
-        for ddt in _dist_date_time:
-            if i == 0:
-                dist_date_time.append([ddt['distance'], ddt['begin_date'], ddt['begin_time']])
-            i += 1
-        _items = db.tododb.find({}, { "miles": 1, "km": 1, "close": 1}).sort("km")
 
-        header = []
-        header.append(["miles", "km", "close"])
-        i = 0
-        for item in _items:
-            if i - 1 == args['top']:
-                break
-            if i > 0:
-                items.append([item['miles'], item['km'], item['close']])
-            i += 1
-        return {'header': header, 'items': items, 'ddt': dist_date_time}
-
-class ListAllcsv(Resource):
+class listAlljson(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'Token value is not included in link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'Wrong Token, cannot verify', 401
+        top = request.args.get("top")
+        if top == None:
+          top = 20
+        _items = db.tododb.find()
+        sort_items = _items.sort("open_time")
+         #make it to limit k top
+        k_items = sort_items.limit(int(top))
 
-        parser = reqparse.RequestParser()
-        parser.add_argument('top', type=int, location='args')
-        args = parser.parse_args()
+        items = [item for item in k_items]
 
-        _dist_date_time = db.tododb.find({}, { "distance": 1, "begin_date": 1, "begin_time": 1})
-        i = 0
-        ret = "\"distance\",\"begin_date\",\"begin_time\"\n"
-        for ddt in _dist_date_time:
-            if i == 0:
-               ret += "\"" + ddt['distance'] + "\",\"" + ddt['begin_date'] + "\",\"" + ddt['begin_time'] + "\"\n"
-            i += 1
-        _items = db.tododb.find({}, { "distance": 0, "begin_date": 0, "begin_time": 0}).sort("km")
+#
+        return {
+        'open_time':[item['open_time'] for item in items],
+        'close_time':[item['close_time'] for item in items],
+        'km':[item['close_time'] for item in items] }
 
-        ret += "\"miles\",\"km\",\"location\",\"open\",\"close\"\n"
-        i = 0
-        for item in _items:
-            if i - 1 == args['top']:
-                break
-            if i > 0:
-                ret += "\"" + str(item['miles']) + "\",\"" + str(item['km']) + "\",\"" + item['location'] + "\",\"" + item['open'] + "\",\"" + item['close']+ "\"\n"
-            i += 1
-
-        return ret
-
-class ListOpenOnlycsv(Resource):
+#listOpenOnlyJson
+class listOpenOnlyjson(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'Token value is not included in link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'Wrong Token, cannot verify', 401
+        top = request.args.get("top")
+        if top == None:
+            top = 20
 
-        parser = reqparse.RequestParser()
-        parser.add_argument('top', type=int, location='args')
-        args = parser.parse_args()
 
-        _dist_date_time = db.tododb.find({}, { "distance": 1, "begin_date": 1, "begin_time": 1})
-        i = 0
-        ret = "\"distance\",\"begin_date\",\"begin_time\"\n"
-        for ddt in _dist_date_time:
-            if i == 0:
-               ret += "\"" + ddt['distance'] + "\",\"" + ddt['begin_date'] + "\",\"" + ddt['begin_time'] + "\"\n"
-            i += 1
-        _items = db.tododb.find({}, { "distance": 0, "begin_date": 0, "begin_time": 0}).sort("km")
+        _items = db.tododb.find()
+        sort_items = _items.sort("open_time")
+        k_items = sort_items.limit(int(top))
 
-        ret += "\"miles\",\"km\",\"location\",\"open\"\n"
-        i = 0
-        for item in _items:
-            if i - 1 == args['top']:
-                break
-            if i > 0:
-                ret += "\"" + str(item['miles']) + "\",\"" + str(item['km']) + "\",\"" + item['location'] + "\",\"" + item['open'] + "\"\n"
-            i += 1
+        return {
+        'open_time': [item['open_time'] for item in k_items]
+        }
 
-        return ret
-
-class ListCloseOnlycsv(Resource):
+#listCloseOnlyJson
+class listCloseOnlyjson(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'Token value is not included in link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'Wrong Token, cannot verify', 401
+        top = request.args.get("top")
+        if top == None:
+            top =20
+        #      _items = db.tododb.find()
+        #      return { 'close_time': [item["close_time"] for item in _items]}
+        # else:
+        _items = db.tododb.find()
+        sort_items = _items.sort("close_time")
+        k_items = sort_items.limit(int(top))
+        #actually km wont show up
+        return {
+        'close_time': [item["close_time"] for item in k_items]
+        }
+class listAllcsv(Resource):
+    def get(self):
+        top = request.args.get("top")
+        if top == None:
+            top = 20 # total have 20 row
+        _items = db.tododb.find()
+        sort_items = _items.sort("open_time")
+        k_items = sort_items.limit(int(top))
 
-        parser = reqparse.RequestParser()
-        parser.add_argument('top', type=int, location='args')
-        args = parser.parse_args()
+        csv = "List All Time In CSV: "
+        for item in k_items:
+            csv += item['km']+ ' , ' +item['open_time']+ ' , '+ item['close_time'] + ', '
+        # app.logger.debug('csv:{}'.format(csv))
+        return csv
 
-        _dist_date_time = db.tododb.find({}, { "distance": 1, "begin_date": 1, "begin_time": 1})
-        i = 0
-        ret = "\"distance\",\"begin_date\",\"begin_time\"\n"
-        for ddt in _dist_date_time:
-            if i == 0:
-               ret += "\"" + ddt['distance'] + "\",\"" + ddt['begin_date'] + "\",\"" + ddt['begin_time'] + "\"\n"
-            i += 1
-        _items = db.tododb.find({}, { "distance": 0, "begin_date": 0, "begin_time": 0}).sort("km")
+class listOpenOnlycsv(Resource):
+    def get(self):
+        top = request.args.get('top')
+        if top == None:
+            top = 20
 
-        ret += "\"miles\",\"km\",\"location\",\"close\"\n"
-        i = 0
-        for item in _items:
-            if i - 1 == args['top']:
-                break
-            if i > 0:
-                ret += "\"" + str(item['miles']) + "\",\"" + str(item['km']) + "\",\"" + item['location'] + "\",\"" + "\",\"" + item['close']+ "\"\n"
-            i += 1
+        _items = db.tododb.find()
+        sort_items = _items.sort("open_time")
+        k_items = sort_items.limit(int(top))
 
-        return ret
+        csv = 'List Open Only in CSV: '
+        #\n doesnt work here
+        for item in k_items:
+            csv += item['km']+' , '+item['open_time']+', '
 
-api.add_resource(ListAllJSON, '/listAll', '/listAll/json')
-api.add_resource(ListOpenOnlyJSON, '/listOpenOnly', '/listOpenOnly/json')
-api.add_resource(ListCloseOnlyJSON, '/listCloseOnly', '/listCloseOnly/json')
-api.add_resource(ListAllcsv, '/listAll/csv')
-api.add_resource(ListOpenOnlycsv, '/listOpenOnly/csv')
-api.add_resource(ListCloseOnlycsv, '/listCloseOnly/csv')
+        return csv
+
+
+class listCloseOnlycsv(Resource):
+    def get(self):
+        top = request.args.get('top')
+        if top == None:
+            top = 20
+
+        _items = db.tododb.find()
+        sort_items = _items.sort("close_time")
+        k_items = sort_items.limit(int(top))
+
+        csv = 'List Close Only in CSV: '
+
+        for item in k_items:
+            csv += item['km'] + ' , ' + item['close_time']+ ', '
+
+        # app.logger.debug('csv:{}'.format(csv))
+        return csv
+
+class register(Resource):
+    def post(self):
+        username = request.form['username']
+        password = request.form['password']
+        existing_username = users.usersdb.find_one({'username' : username})
+        if username == None or password == None:
+            return "Need password or usename", 400
+        elif existing_username is not None:
+            return "The username already exist", 400
+        else:
+            password = hash_password(str(password))
+            #define the id
+            app.config["LENGTH"] += 1
+            _id = app.config["LENGTH"]
+            new_user = { 'location' : _id, 'username' : username, 'password' : password}
+
+            users.usersdb.insert_one(new_user)
+            #check the databse for the usersdb
+            _items = users.usersdb.find()
+            app.logger.debug(_items)
+            items = [item for item in _items]
+            app.logger.debug(items)
+            reponse = {'location':_id,'username':username,'password':password}
+            return reponse, 201
+
+
+class token(Resource):
+    def get(self):
+        username = request.args.get("username")
+        password = request.args.get("password")
+        existing_username = users.usersdb.find_one({'username': username})
+
+        if username == None or password == None:
+            return "Please go to localhost:5001/api, have a registration", 400
+        elif existing_username == None:
+            return "Please re-typing your username", 401
+        else:
+            password_correct = verify_password(password, existing_username["password"])
+            if(password_correct):
+                _token = generate_auth_token(existing_username['location'], 600)
+                return make_response(jsonify({'token' : _token.decode('ascii'), 'duration' : 600}), 201)
+            else:
+                return "Password or Username is wrong", 401
+
+#protect api with token.
+class protected(Resource):
+    def get(self,token):
+        if(verify_auth_token(token)):
+            _items = db.tododb.find()
+            items = [item for item in _items]
+            return {'open_time':[item['open_time'] for item in items],
+            'close_time':[item['close_time'] for item in items]}
+        else:
+            return "Unauthorized", 401
+
+
+
+
+
+
+
+#register
+
+#_token
+# api.add_resource(index, '/api')
+api.add_resource(token, '/api/token')
+api.add_resource(register,'/api/register')
+api.add_resource(protected,'/api/protected/<string:token>')
+
+#first part:
+api.add_resource(listAll,'/listAll')
+api.add_resource(listOpenOnly,'/listOpenOnly')
+api.add_resource(listCloseOnly,'/listCloseOnly')
+#
+# #################################################
+api.add_resource(listAllcsv,'/listAll/csv')
+api.add_resource(listOpenOnlycsv,'/listOpenOnly/csv')
+api.add_resource(listCloseOnlycsv,'/listCloseOnly/csv')
+# ########################################################
+#
+api.add_resource(listAlljson,'/listAll/json')
+api.add_resource(listOpenOnlyjson, '/listOpenOnly/json')
+api.add_resource(listCloseOnlyjson, '/listCloseOnly/json')
+
+
 
 # Run the application
 if __name__ == '__main__':
