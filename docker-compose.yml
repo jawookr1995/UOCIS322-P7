@@ -1,0 +1,37 @@
+version: '3'  # version of compose format 
+
+services:
+  laptop-service:
+    build: ./api  
+    volumes:
+      - ./api:/usr/src/app 
+    ports:
+      - 5218:80  # host:container
+    environment: 
+      - DB_PORT_27017_TCP_ADDR=db
+    depends_on: 
+      - web
+
+  website:
+    image: php:apache
+    volumes:
+      - ./website:/var/www/html
+    ports:
+      - 5118:80  # host:container
+    depends_on:
+      - laptop-service  
+
+  web:
+    build: ./brevetsapp
+    command: python -u flask_brevets.py
+    ports:
+      - "5318:5000"
+    volumes:
+      - ./brevetsapp:/todo
+    environment: 
+      - DB_PORT_27017_TCP_ADDR=db
+    depends_on: 
+      - db
+
+  db:
+    image: mongo
