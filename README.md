@@ -68,6 +68,11 @@
 
 - It is basic brevet calculator that we can calculate brevet times. by inserting date you want, and each brevet distance, you will automaticlally get open time and close time, and if you hit submit, the data will be stored in database. And then If you hit the display button, you can see all the list that you recentaly submitted.
 
+## What is in Each port?
+<host:5118> api page that how all the database.
+<host:5218> login, resgister, logout, remember me, and also test protected link with token.
+<host:5318> brevet distance calculator application.
+
 
 
 # Credits
