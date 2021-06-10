@@ -362,6 +362,7 @@ api.add_resource(ListCloseOnlyJSON, '/listCloseOnly', '/listCloseOnly/json')
 api.add_resource(ListAllcsv, '/listAll/csv')
 api.add_resource(ListOpenOnlycsv, '/listOpenOnly/csv')
 api.add_resource(ListCloseOnlycsv, '/listCloseOnly/csv')
+api.add_resource(protected,'/api/protected/<string:token>')
 
 # Run the application
 if __name__ == '__main__':
