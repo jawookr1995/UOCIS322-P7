@@ -349,9 +349,8 @@ class ListCloseOnlycsv(Resource):
 class protected(Resource):
     def get(self,token):
         if(verify_auth_token(token)):
-            _items = db.tododb.find()
-            items = [item for item in _items]
-            return {'open_time':(items['open']),'close_time':(items['close_time'])}
+            items = db.tododb.find()
+            return {'open_time':[items['open']],'close_time':[items['close_time']]}
         else:
             return "Unauthorized", 401
 
