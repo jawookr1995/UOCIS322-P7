@@ -51,7 +51,7 @@ def register():
     form = RegisterForm(request.form)
     username = form.username.data
     password = form.password.data
-    password = hash_password(password)
+    
     
     Id = "" 
 
