@@ -136,12 +136,11 @@ def login():
         if verify_password(password, hashVal) is True:
 
             #now get the username ID and create an active session
-            #entryTwo=userInfo[0]
             actID = entry['_id']
             session['user_id'] = actID
             user = UserInfo(actID)
             
-            #log the user in
+            #User log in
             login_user(user, remember = rememberl)
             return redirect(request.args.get("next") or url_for("token"))
 
@@ -167,15 +166,15 @@ def index():
 @app.route("/api/token", methods=['GET'])
 @login_required
 def token():
-    #get user_id from login session
+    #get user_id from session
     user_id = session.get('user_id')
-    #generate a token to tie to the user
+    #generate token for user
     tokenInfo = generate_auth_token(user_id, 600)
     #get token in proper form
     retToken = tokenInfo['token']
     retToken = retToken.decode('utf-8')
     
-    #now return the token and the duration in json
+    #now return the token and the duration in json, for now just set as 60.
     result = {'token': retToken, 'duration': 60}
     return flask.jsonify(result=result)
 
