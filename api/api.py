@@ -181,10 +181,6 @@ def token():
 class ListAllJSON(Resource):
     def get(self):
         #Get token that is written by user in url and verify the token
-        token = request.args.get('token')
-        if token == None: return 'Token value is not included in link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'Wrong Token, cannot verify', 401
 
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
@@ -214,10 +210,6 @@ class ListAllJSON(Resource):
 
 class ListOpenOnlyJSON(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'Token value is not included in link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'Wrong Token, cannot verify', 401
 
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
@@ -247,10 +239,6 @@ class ListOpenOnlyJSON(Resource):
 
 class ListCloseOnlyJSON(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'Token value is not included in link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'Wrong Token, cannot verify', 401
 
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
@@ -280,11 +268,6 @@ class ListCloseOnlyJSON(Resource):
 
 class ListAllcsv(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'Token value is not included in link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'Wrong Token, cannot verify', 401
-
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
@@ -311,10 +294,6 @@ class ListAllcsv(Resource):
 
 class ListOpenOnlycsv(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'Token value is not included in link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'Wrong Token, cannot verify', 401
 
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
@@ -342,10 +321,6 @@ class ListOpenOnlycsv(Resource):
 
 class ListCloseOnlycsv(Resource):
     def get(self):
-        token = request.args.get('token')
-        if token == None: return 'Token value is not included in link', 401
-        verify = verify_auth_token(token)
-        if verify == None: return 'Wrong Token, cannot verify', 401
 
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
@@ -370,6 +345,16 @@ class ListCloseOnlycsv(Resource):
             i += 1
 
         return ret
+
+class protected(Resource):
+    def get(self,token):
+        if(verify_auth_token(token)):
+            _items = db.tododb.find()
+            items = [item for item in _items]
+            return {'open_time':[item[open_list] for item in items],
+            'close_time':[item[close_list] for item in items]}
+        else:
+            return "Unauthorized", 401
 
 api.add_resource(ListAllJSON, '/listAll', '/listAll/json')
 api.add_resource(ListOpenOnlyJSON, '/listOpenOnly', '/listOpenOnly/json')
