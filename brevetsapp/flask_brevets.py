@@ -21,8 +21,9 @@ app = flask.Flask(__name__)
 CONFIG = config.configuration()
 
 
-client = MongoClient(os.environ['DB_PORT_27017_TCP_ADDR'], 27017)
+client = MongoClient('db' 27017)
 db = client.tododb
+db.tododb.delete_many({})
 
 ###
 # Pages
