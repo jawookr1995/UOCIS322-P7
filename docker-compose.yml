@@ -7,8 +7,6 @@ services:
       - ./api:/usr/src/app 
     ports:
       - 5218:80  # host:container
-    environment: 
-      - DB_PORT_27017_TCP_ADDR=db
     depends_on: 
       - web
 
@@ -28,10 +26,8 @@ services:
       - "5318:5000"
     volumes:
       - ./brevetsapp:/todo
-    environment: 
-      - DB_PORT_27017_TCP_ADDR=db
-    depends_on: 
+    links: 
       - db
 
   db:
-    image: mongo
+    image: mongo:3.0.2
