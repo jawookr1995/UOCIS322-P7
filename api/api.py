@@ -349,10 +349,15 @@ class ListCloseOnlycsv(Resource):
 class protected(Resource):
     def get(self,token):
         if(verify_auth_token(token)):
-            items = db.tododb.find()
-            return {'open_time':[items['open']],'close_time':[items['close_time']]}
-        else:
-            return "Unauthorized", 401
+            ret = "\"distance\",\"begin_date\",\"begin_time\"\n"
+            _items = db.tododb.find({}, { "distance": 0, "begin_date": 0, "begin_time": 0}).sort("km")
+            ret += "\"miles\",\"km\",\"location\",\"close\"\n"
+            i = 0
+            for item in _items:
+                if i == 0:
+                    ret += "\"" + str(item['miles']) + "\",\"" + str(item['km']) + "\",\"" + item['location'] + "\",\"" + "\",\"" + item['close']+ "\"\n"
+            else:
+                return "Unauthorized", 401
 
 api.add_resource(ListAllJSON, '/listAll', '/listAll/json')
 api.add_resource(ListOpenOnlyJSON, '/listOpenOnly', '/listOpenOnly/json')
