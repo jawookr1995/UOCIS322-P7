@@ -7,8 +7,10 @@ services:
       - ./api:/usr/src/app 
     ports:
       - 5218:80  # host:container
+    environment: 
+      - DB_PORT_27017_TCP_ADDR=db
     depends_on: 
-      - db
+      - web
 
   website:
     image: php:apache
@@ -25,16 +27,11 @@ services:
     ports:
       - "5318:5000"
     volumes:
-<<<<<<< HEAD:docker-compose.yml
       - ./brevetsapp:/todo
-    links: 
-=======
-      - ./brevetsapp:/index
     environment: 
       - DB_PORT_27017_TCP_ADDR=db
     depends_on: 
->>>>>>> parent of b601303 (revert chagnes and delete unnecessary html files):brevets/docker-compose.yml
       - db
 
   db:
-    image: mongo:3.0.2
+    image: mongo
