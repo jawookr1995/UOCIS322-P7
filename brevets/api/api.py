@@ -116,7 +116,7 @@ def verify_auth_token(token):
 
 @app.route("/api/login", methods=["GET", "POST"])
 def login():
-    #get our form and its values
+    # get the forms
     form = LoginForm(request.form)
     if (request.method == "POST") and (form.validate()):
         username = form.username.data
@@ -181,6 +181,12 @@ def token():
 
 class ListAllJSON(Resource):
     def get(self):
+        #Get token that is written by user in url and verify the token
+        token = request.args.get('token')
+        if token == None: return 'please enter a token value in your link', 401
+        verify = verify_auth_token(token)
+        if verify == None: return 'token could not be verified', 401
+
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
@@ -209,6 +215,11 @@ class ListAllJSON(Resource):
 
 class ListOpenOnlyJSON(Resource):
     def get(self):
+        token = request.args.get('token')
+        if token == None: return 'please enter a token value in your link', 401
+        verify = verify_auth_token(token)
+        if verify == None: return 'token could not be verified', 401
+
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
@@ -237,6 +248,11 @@ class ListOpenOnlyJSON(Resource):
 
 class ListCloseOnlyJSON(Resource):
     def get(self):
+        token = request.args.get('token')
+        if token == None: return 'please enter a token value in your link', 401
+        verify = verify_auth_token(token)
+        if verify == None: return 'token could not be verified', 401
+
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
@@ -265,6 +281,11 @@ class ListCloseOnlyJSON(Resource):
 
 class ListAllcsv(Resource):
     def get(self):
+        token = request.args.get('token')
+        if token == None: return 'please enter a token value in your link', 401
+        verify = verify_auth_token(token)
+        if verify == None: return 'token could not be verified', 401
+
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
@@ -291,6 +312,11 @@ class ListAllcsv(Resource):
 
 class ListOpenOnlycsv(Resource):
     def get(self):
+        token = request.args.get('token')
+        if token == None: return 'please enter a token value in your link', 401
+        verify = verify_auth_token(token)
+        if verify == None: return 'token could not be verified', 401
+
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
@@ -317,6 +343,11 @@ class ListOpenOnlycsv(Resource):
 
 class ListCloseOnlycsv(Resource):
     def get(self):
+        token = request.args.get('token')
+        if token == None: return 'please enter a token value in your link', 401
+        verify = verify_auth_token(token)
+        if verify == None: return 'token could not be verified', 401
+        
         parser = reqparse.RequestParser()
         parser.add_argument('top', type=int, location='args')
         args = parser.parse_args()
