@@ -23,7 +23,7 @@ CONFIG = config.configuration()
 
 client = MongoClient('db' ,27017)
 db = client.tododb
-db.tododb.delete_many({})
+
 
 ###
 # Pages
