@@ -27,7 +27,7 @@ services:
     ports:
       - "5318:5000"
     volumes:
-      - ./brevetsapp:/todo
+      - ./brevetsapp:/index
     environment: 
       - DB_PORT_27017_TCP_ADDR=db
     depends_on: 

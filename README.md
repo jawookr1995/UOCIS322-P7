@@ -60,7 +60,7 @@
 
 -After you submit the registration you can go to http://<host:port>/api/login for login or go back to index page and hit login button. If you hit the login button with "remember me" user's token will be generated and authentication duration will be displayed.
 
-- If you get the token and include that followed by correct api link representation. For example, if you go to testium.cs.uoregon.edu::5218/listAll/json?eyJhbGciOiJIUzI1NiIsImlhdCI6MTYyMzI5ODUwMiwiZXhwIjoxNjIzMjk5MTAyfQ. which includes token after the api representaion, you can see the data for all the json value with authentication. If token value is empty, then it would say "Token value is not included in link" with 401 error. If wrong token is inserted, then it would say "Worng Token, cannot verify"
+- If you get the token and include that followed by correct api link representation. For example, if you go to testium.cs.uoregon.edu::5218/protected/<"Token in String"> which includes token after the api representaion, you can see the protected data that requires authentication. If token value is empty,or worng it will raise error. with 401 error. If 
 
 
 
